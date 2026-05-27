@@ -15,7 +15,7 @@ class RoleScreen extends StatefulWidget {
 }
 
 /// Registration only offers these roles, in this order, and only if the API returns them.
-const List<String> _kRegistrationRoleSlugs = ['rider', 'courier', 'delivery'];
+const List<String> _kRegistrationRoleSlugs = ['customer', 'vendor'];
 
 List<Role> _filterRegistrationRoles(List<Role> apiRoles) {
   final bySlug = <String, Role>{};
@@ -117,12 +117,11 @@ class _RoleScreenState extends State<RoleScreen>
 
   IconData _iconForRole(Role role) {
     switch ((role.name ?? '').trim().toLowerCase()) {
+      case 'customer':
       case 'rider':
         return Icons.person_rounded;
-      case 'courier':
-        return Icons.local_shipping_outlined;
-      case 'delivery':
-        return Icons.restaurant_outlined;
+      case 'vendor':
+        return Icons.storefront_outlined;
       default:
         return Icons.person_outline;
     }
@@ -134,7 +133,7 @@ class _RoleScreenState extends State<RoleScreen>
       backgroundColor: AppConst.background,
       body: Column(
         children: [
-          CustomAppBar(title: 'appbar.role'.tr),
+          CustomAppBar(title: 'Continue as'),
           Expanded(
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 30.h),
@@ -144,7 +143,7 @@ class _RoleScreenState extends State<RoleScreen>
                   SizedBox(height: 20.h),
                   // "Select your role" text
                   Text(
-                    'role.select_prompt'.tr,
+                    'Choose how you want to use T-Ride',
                     style: TextStyle(
                       color: AppConst.black,
                       fontSize: 18.sp,
@@ -233,7 +232,7 @@ class _RoleScreenState extends State<RoleScreen>
                                   ),
                                 ] else ...[
                                   Text(
-                                    'role.select_placeholder'.tr,
+                                    'Continue as Customer or Vendor',
                                     style: TextStyle(
                                       color: AppConst.grey,
                                       fontSize: 16.sp,
@@ -379,3 +378,5 @@ class _RoleScreenState extends State<RoleScreen>
     );
   }
 }
+
+

@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:t_ride_rider_app/data/repositories/auth_repository.dart';
-import 'package:t_ride_rider_app/widgets/app_back_button.dart';
 import 'package:t_ride_rider_app/widgets/app_snackbar.dart';
 import '../../consts/appConst.dart';
 import 'Regsitration_screens/email_registration_screen.dart';
 import 'Regsitration_screens/phone_otp_screen.dart';
-import 'Regsitration_screens/whatsapp_registration_screen.dart';
+import 'Regsitration_screens/role_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -33,7 +32,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   void _validatePhoneNumber() {
     setState(() {
       isPhoneNumberValid =
-          phoneController.text.isNotEmpty && phoneController.text.length >= 10;
+          phoneController.text.trim().isNotEmpty &&
+          phoneController.text.trim().length >= 10;
     });
   }
 
@@ -48,11 +48,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   Future<void> _onContinuePressed() async {
     if (!isPhoneNumberValid || _isSendingOtp) return;
 
-    final fullNumber = '${countryCodeController.text}${phoneController.text}';
+    final fullNumber =
+        '${countryCodeController.text.trim()}${phoneController.text.trim()}';
 
-    setState(() {
-      _isSendingOtp = true;
-    });
+    setState(() => _isSendingOtp = true);
 
     try {
       final success = await _authRepository.sendOtp(
@@ -65,357 +64,238 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       if (success) {
         Get.to(
           () => PhoneOtpScreen(
-            phoneNumber: phoneController.text,
-            countryCode: countryCodeController.text,
+            phoneNumber: phoneController.text.trim(),
+            countryCode: countryCodeController.text.trim(),
           ),
         );
       } else {
-        AppSnackBar.show('common.error'.tr, 'reg.otp_send_failed'.tr);
+        AppSnackBar.show('Error', 'Unable to send OTP. Please try again.');
       }
     } catch (e) {
-      // ignore: avoid_print
-      print('RegistrationScreen send OTP error: $e');
       if (mounted) {
-        AppSnackBar.show('common.error'.tr, e.toString());
+        AppSnackBar.show('Error', 'Unable to send OTP. Please try again.');
       }
     } finally {
-      if (mounted) {
-        setState(() {
-          _isSendingOtp = false;
-        });
-      }
+      if (mounted) setState(() => _isSendingOtp = false);
     }
+  }
+
+  Widget _secondaryButton({
+    required IconData icon,
+    required String text,
+    required VoidCallback onTap,
+  }) {
+    return SizedBox(
+      width: double.infinity,
+      height: 54.h,
+      child: OutlinedButton.icon(
+        onPressed: onTap,
+        icon: Icon(icon, color: AppConst.black, size: 22.sp),
+        label: Text(
+          text,
+          style: TextStyle(
+            color: AppConst.black,
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: AppConst.white,
+          side: BorderSide(color: AppConst.blackWithOpacity(0.12)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppConst.background,
-      body: Column(
-        children: [
-          // Top Section - Black Background with Logo
-          ClipRRect(
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(30.r),
-              bottomRight: Radius.circular(30.r),
-            ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppConst.black,
-                borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(30.r),
-                  bottomRight: Radius.circular(30.r),
+      body: SafeArea(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 22.w),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: 34.h),
+
+              Center(
+                child: Image.asset(
+                  'assets/T (1) 2 (1).png',
+                  width: 110.w,
+                  height: 90.h,
+                  fit: BoxFit.contain,
                 ),
               ),
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    // vert.h,
-                  ),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        // Logo
-                        // Align(
-                        //   alignment: AlignmentDirectional.topStart,
-                        //   child: AppBackIconButton(color: AppConst.white),
-                        // ),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              'assets/T (1) 2 (1).png',
-                              width: 200.w,
-                              height: 200.h,
-                              fit: BoxFit.contain,
-                            ),
-                          ],
-                        ),
-                        // Welcome Text
-                        Text(
-                          'reg.welcome_title'.tr,
-                          style: TextStyle(
-                            color: AppConst.primaryColor,
-                            fontSize: 28.sp,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(height: 12.h),
-                        // Instruction Text
-                        Text(
-                          'reg.phone_instruction'.tr,
-                          style: TextStyle(
-                            color: AppConst.white,
-                            fontSize: 16.sp,
-                            fontWeight: FontWeight.normal,
-                          ),
-                        ),
-                        SizedBox(height: 40.h),
-                      ],
+
+              SizedBox(height: 20.h),
+
+              Text(
+                'Move smarter with T-Ride',
+                style: TextStyle(
+                  color: AppConst.black,
+                  fontSize: 30.sp,
+                  fontWeight: FontWeight.w800,
+                  height: 1.1,
+                ),
+              ),
+
+              SizedBox(height: 10.h),
+
+              Text(
+                'Enter your phone number to sign in or create an account.',
+                style: TextStyle(
+                  color: AppConst.grey,
+                  fontSize: 15.sp,
+                  height: 1.4,
+                ),
+              ),
+
+              SizedBox(height: 32.h),
+
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: AppConst.white,
+                  borderRadius: BorderRadius.circular(18.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppConst.blackWithOpacity(0.06),
+                      blurRadius: 18,
+                      offset: const Offset(0, 8),
                     ),
-                  ),
+                  ],
                 ),
-              ),
-            ),
-          ),
-          // Bottom Section - Yellow Background with Input Fields
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-              child: SingleChildScrollView(
-                physics: const ClampingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                child: Row(
                   children: [
-                    // Phone Number Input Fields
-                    Row(
-                      children: [
-                        // Country Code Field
-                        Container(
-                          width: 100.w,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: TextField(
-                            controller: countryCodeController,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: AppConst.black,
-                              fontSize: 16.sp,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            decoration: InputDecoration(
-                              fillColor: AppConst.cardLight,
-                              filled: true,
-                              prefixIcon: Icon(
-                                Icons.phone,
-                                color: AppConst.black,
-                                size: 20.sp,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.only(
-                                  topRight: Radius.circular(12.r),
-                                  bottomLeft: Radius.circular(12.r),
-                                ),
-                                borderSide: BorderSide.none,
-                              ),
-                              contentPadding: EdgeInsets.symmetric(
-                                horizontal: 8.w,
-                                vertical: 16.h,
-                              ),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 12.w),
-                        // Phone Number Field
-                        Expanded(
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppConst.cardLight,
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                            child: TextField(
-                              controller: phoneController,
-                              keyboardType: TextInputType.phone,
-                              style: TextStyle(
-                                color: AppConst.black,
-                                fontSize: 16.sp,
-                              ),
-                              decoration: InputDecoration(
-                                fillColor: AppConst.cardLight,
-                                filled: true,
-                                hintText: 'reg.hint_phone'.tr,
-                                hintStyle: TextStyle(
-                                  color: AppConst.grey,
-                                  fontSize: 16.sp,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.only(
-                                    topRight: Radius.circular(12.r),
-                                    bottomLeft: Radius.circular(12.r),
-                                  ),
-                                  borderSide: BorderSide.none,
-                                ),
-                                contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 16.w,
-                                  vertical: 16.h,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 30.h),
-                    // Continue Button
                     SizedBox(
-                      width: double.infinity,
-                      height: 50.h,
-                      child: ElevatedButton(
-                        onPressed: isPhoneNumberValid && !_isSendingOtp
-                            ? _onContinuePressed
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isPhoneNumberValid && !_isSendingOtp
-                              ? AppConst.accent
-                              : AppConst.accentWithOpacity(0.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: AppConst.buttonRadius,
-                          ),
-                          elevation: 0,
+                      width: 72.w,
+                      child: TextField(
+                        controller: countryCodeController,
+                        textAlign: TextAlign.center,
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          border: InputBorder.none,
                         ),
-                        child: Text(
-                          _isSendingOtp
-                              ? 'reg.sending_otp'.tr
-                              : 'common.continue'.tr,
-                          style: TextStyle(
-                            color: AppConst.black,
+                        style: TextStyle(
+                          color: AppConst.black,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    Container(
+                      width: 1,
+                      height: 28.h,
+                      color: AppConst.blackWithOpacity(0.12),
+                    ),
+                    SizedBox(width: 12.w),
+                    Expanded(
+                      child: TextField(
+                        controller: phoneController,
+                        keyboardType: TextInputType.phone,
+                        decoration: InputDecoration(
+                          border: InputBorder.none,
+                          hintText: 'Phone number',
+                          hintStyle: TextStyle(
+                            color: AppConst.grey,
                             fontSize: 16.sp,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
-                      ),
-                    ),
-                    SizedBox(height: 30.h),
-                    // Divider with "or continue with"
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Divider(color: AppConst.black, thickness: 1),
-                        ),
-                        Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 16.w),
-                          child: Text(
-                            'reg.or_continue_with'.tr,
-                            style: TextStyle(
-                              color: AppConst.black,
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          child: Divider(color: AppConst.black, thickness: 1),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 30.h),
-                    // Continue with Email Button
-                    Container(
-                      width: double.infinity,
-                      height: 50.h,
-                      decoration: BoxDecoration(
-                        color: AppConst.cardLight,
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Get.to(() => const EmailRegistrationScreen());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppConst.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Google G Logo (simplified)
-                            Container(
-                              width: 24.w,
-                              height: 24.w,
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'G',
-                                  style: TextStyle(
-                                    color: AppConst.white,
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Text(
-                              'reg.continue_email'.tr,
-                              style: TextStyle(
-                                color: AppConst.black,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-                    // Continue with WhatsApp Button
-                    Container(
-                      width: double.infinity,
-                      height: 50.h,
-                      decoration: BoxDecoration(
-                        color: AppConst.cardLight,
-                        borderRadius: BorderRadius.circular(12.r),
-                      ),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Get.to(() => const WhatsappRegistrationScreen());
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppConst.white,
-                          elevation: 0,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Google G Logo (simplified)
-                            Container(
-                              width: 24.w,
-                              height: 24.w,
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'G',
-                                  style: TextStyle(
-                                    color: AppConst.white,
-                                    fontSize: 14.sp,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            SizedBox(width: 12.w),
-                            Text(
-                              'reg.continue_whatsapp'.tr,
-                              style: TextStyle(
-                                color: AppConst.black,
-                                fontSize: 16.sp,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                        style: TextStyle(
+                          color: AppConst.black,
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
+
+              SizedBox(height: 20.h),
+
+              SizedBox(
+                width: double.infinity,
+                height: 56.h,
+                child: ElevatedButton(
+                  onPressed: isPhoneNumberValid && !_isSendingOtp
+                      ? _onContinuePressed
+                      : null,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isPhoneNumberValid && !_isSendingOtp
+                        ? AppConst.black
+                        : AppConst.blackWithOpacity(0.35),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                    ),
+                  ),
+                  child: Text(
+                    _isSendingOtp ? 'Sending code...' : 'Continue',
+                    style: TextStyle(
+                      color: AppConst.white,
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+
+              SizedBox(height: 26.h),
+
+              Row(
+                children: [
+                  Expanded(child: Divider(color: AppConst.blackWithOpacity(0.14))),
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 14.w),
+                    child: Text(
+                      'or',
+                      style: TextStyle(color: AppConst.grey, fontSize: 14.sp),
+                    ),
+                  ),
+                  Expanded(child: Divider(color: AppConst.blackWithOpacity(0.14))),
+                ],
+              ),
+
+              SizedBox(height: 22.h),
+
+              _secondaryButton(
+                icon: Icons.email_outlined,
+                text: 'Continue with email',
+                onTap: () => Get.to(() => const EmailRegistrationScreen()),
+              ),
+
+              SizedBox(height: 12.h),
+
+              _secondaryButton(
+                icon: Icons.storefront_outlined,
+                text: 'Continue as vendor',
+                onTap: () => Get.to(() => const RoleScreen()),
+              ),
+
+              const Spacer(),
+
+              Center(
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: 18.h),
+                  child: Text(
+                    'By continuing, you agree to T-Ride Terms and Privacy Policy.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: AppConst.grey,
+                      fontSize: 12.sp,
+                      height: 1.4,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

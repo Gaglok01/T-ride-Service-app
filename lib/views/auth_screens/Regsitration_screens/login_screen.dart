@@ -8,7 +8,7 @@ import 'package:t_ride_rider_app/views/auth_screens/language_selection_screen.da
 import 'package:t_ride_rider_app/views/custom_navbar/navbar.dart';
 import 'package:t_ride_rider_app/widgets/app_snackbar.dart';
 
-import '../../consts/appConst.dart';
+import '../../../consts/appConst.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -348,3 +348,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+

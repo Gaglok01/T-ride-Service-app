@@ -7,7 +7,7 @@ import 'package:t_ride_rider_app/widgets/app_snackbar.dart';
 import 'package:t_ride_rider_app/widgets/custom_appbar.dart';
 import 'dart:async';
 import '../../../consts/appConst.dart';
-import 'terms_and_condition_screen.dart';
+import 'role_screen.dart';
 
 class PhoneOtpScreen extends StatefulWidget {
   final String phoneNumber;
@@ -107,8 +107,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
       if (!mounted) return;
 
       if (success) {
-        Get.to(
-          () => const TermsAndCondition(),
+        Get.to(() => const RoleScreen(),
           arguments: {
             'identifier': identifier,
             ...?Get.arguments as Map<String, dynamic>?,
@@ -162,7 +161,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                   RichText(
                     text: TextSpan(
                       style: TextStyle(
-                        color: AppConst.black,
+                        color: AppConst.white,
                         fontSize: 17.sp,
                         fontWeight: FontWeight.w500,
                       ),
@@ -177,17 +176,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                       ],
                     ),
                   ),
-                  if (_debugOtp != null) ...[
-                    SizedBox(height: 12.h),
-                    Text(
-                      'DEBUG OTP: $_debugOtp',
-                      style: TextStyle(
-                        color: AppConst.black.withOpacity(0.7),
-                        fontSize: 14.sp,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
+                  
                   SizedBox(height: 40.h),
                   // 4 OTP input fields
                   Row(
@@ -206,7 +195,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                           keyboardType: TextInputType.number,
                           maxLength: 1,
                           style: TextStyle(
-                            color: AppConst.black,
+                            color: AppConst.white,
                             fontSize: 24.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -253,7 +242,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                             ? 'otp.resend'.tr
                             : '${'otp.resend_in'.tr} ${_resendCountdown}s',
                         style: TextStyle(
-                          color: AppConst.black,
+                          color: AppConst.white,
                           fontSize: 14.sp,
                           fontWeight: _canResend
                               ? FontWeight.w600
@@ -275,9 +264,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                           ? _verifyOtp
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _isOtpComplete() && !_isVerifying
-                            ? AppConst.accent
-                            : AppConst.accentWithOpacity(0.5),
+                        backgroundColor: _isOtpComplete() && !_isVerifying ? AppConst.black : AppConst.blackWithOpacity(0.35),
                         shape: RoundedRectangleBorder(
                           borderRadius: AppConst.buttonRadius,
                         ),
@@ -286,7 +273,7 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
                       child: Text(
                         _isVerifying ? 'common.verifying'.tr : 'common.continue'.tr,
                         style: TextStyle(
-                          color: AppConst.black,
+                          color: AppConst.white,
                           fontSize: 16.sp,
                           fontWeight: FontWeight.w600,
                         ),
@@ -303,3 +290,5 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
     );
   }
 }
+
+

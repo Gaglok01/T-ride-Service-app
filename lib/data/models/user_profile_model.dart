@@ -23,6 +23,7 @@ class UserProfile {
     this.whatsappNumber,
     this.address,
     this.city,
+    this.region,
     this.languageId,
     this.status,
     this.createdAt,
@@ -39,6 +40,7 @@ class UserProfile {
   final String? whatsappNumber;
   final String? address;
   final String? city;
+  final String? region;
   final int? languageId;
   final String? status;
   final String? createdAt;
@@ -56,6 +58,7 @@ class UserProfile {
       whatsappNumber: json['whatsapp_number'] as String?,
       address: json['address'] as String?,
       city: json['city'] as String?,
+      region: json['region'] as String?,
       languageId: (json['language_id'] as num?)?.toInt(),
       status: json['status'] as String?,
       createdAt: json['created_at'] as String?,

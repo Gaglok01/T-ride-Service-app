@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:http/http.dart' as http;
 import 'package:t_ride_rider_app/core/config/api_urls.dart';
 import 'package:t_ride_rider_app/data/local/secure_storage_service.dart';
 import 'package:t_ride_rider_app/data/network/api_client.dart';
@@ -189,16 +191,10 @@ class AuthRepository {
   }
 
   /// Registers a user with the provided profile details.
-  /// Expected payload example:
-  /// {
-  ///   "identifier": "+923001234567",
-  ///   "name": "Asad PM",
-  ///   "password": "password123",
-  ///   "role": "customer",
-  ///   "language_id": 1,
-  ///   "address": "Main Street",
-  ///   "city": "Karachi"
-  /// }
+  ///
+  /// The backend used by different T-Ride builds has changed names for a few
+  /// fields over time. We send safe aliases so signup is more tolerant while
+  /// still keeping the same public method used by the app.
   Future<bool> register({
     required String identifier,
     required String name,
@@ -207,20 +203,49 @@ class AuthRepository {
     required int languageId,
     required String address,
     required String city,
+    String? region,
   }) async {
-    final response = await _apiClient.post(
-      ApiUrls.register,
-      headers: _defaultHeaders,
-      body: {
-        'identifier': identifier,
-        'name': name,
-        'password': password,
-        'role': role,
-        'language_id': languageId,
-        'address': address,
-        'city': city,
-      },
-    );
+    final cleanIdentifier = identifier.trim();
+    final cleanPhone = cleanIdentifier.startsWith('+') ? cleanIdentifier : null;
+    final cleanEmail = cleanIdentifier.contains('@') ? cleanIdentifier : null;
+
+    final payload = <String, dynamic>{
+      'identifier': cleanIdentifier,
+      'name': name.trim(),
+      'full_name': name.trim(),
+      'password': password,
+      'password_confirmation': password,
+      'role': role.trim().toLowerCase(),
+      'user_type': role.trim().toLowerCase(),
+      'language_id': languageId,
+      'address': address.trim(),
+      'city': city.trim(),
+      if (region != null && region.trim().isNotEmpty) 'region': region.trim(),
+      if (cleanPhone != null) 'phone': cleanPhone,
+      if (cleanPhone != null) 'phone_number': cleanPhone,
+      if (cleanEmail != null) 'email': cleanEmail,
+    };
+
+    http.Response response;
+    try {
+      response = await _apiClient
+          .post(
+            ApiUrls.register,
+            headers: _defaultHeaders,
+            body: payload,
+          )
+          .timeout(const Duration(seconds: 15));
+    } on TimeoutException {
+      throw AuthRepositoryException(
+        statusCode: 408,
+        body: 'The registration server took too long to respond.',
+      );
+    } catch (e) {
+      throw AuthRepositoryException(
+        statusCode: 0,
+        body: 'Unable to connect to the registration server. Please try again.',
+      );
+    }
 
     if (response.statusCode != 200 && response.statusCode != 201) {
       final error = AuthRepositoryException(
@@ -232,13 +257,63 @@ class AuthRepository {
       throw error;
     }
 
-    final decoded = jsonDecode(response.body) as Map<String, dynamic>;
-    final status = decoded['status'];
+    Map<String, dynamic> decoded;
+    try {
+      decoded = jsonDecode(response.body) as Map<String, dynamic>;
+    } catch (_) {
+      throw AuthRepositoryException(
+        statusCode: response.statusCode,
+        body: 'Invalid response from registration server.',
+      );
+    }
 
+    final status = decoded['status'];
     if (status is bool) return status;
     if (status is num) return status == 1;
 
+    // Some Laravel endpoints return only token/user/message without a status flag.
+    if (decoded.containsKey('token') || decoded.containsKey('user')) {
+      return true;
+    }
+
     return true;
+  }
+
+  String friendlyErrorMessage(Object error) {
+    if (error is! AuthRepositoryException) {
+      return 'Something went wrong. Please try again.';
+    }
+
+    final raw = error.body.trim();
+    if (error.statusCode == 408) {
+      return 'The server is taking too long. Please try again.';
+    }
+    if (error.statusCode == 0) {
+      return 'Unable to connect. Please check your internet and try again.';
+    }
+
+    if (raw.startsWith('{')) {
+      try {
+        final decoded = jsonDecode(raw) as Map<String, dynamic>;
+        final message = decoded['message']?.toString().trim();
+        if (message != null && message.isNotEmpty &&
+            !message.toLowerCase().contains('sqlstate')) {
+          return message;
+        }
+        final errors = decoded['errors'];
+        if (errors is Map && errors.isNotEmpty) {
+          final first = errors.values.first;
+          if (first is List && first.isNotEmpty) return first.first.toString();
+          return first.toString();
+        }
+      } catch (_) {}
+    }
+
+    if (raw.toLowerCase().contains('sqlstate') || raw.toLowerCase().contains('exception')) {
+      return 'We could not create the account right now. Please try again later.';
+    }
+
+    return raw.isNotEmpty ? raw : 'Registration failed. Please try again.';
   }
 }
 

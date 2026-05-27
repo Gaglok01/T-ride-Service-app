@@ -25,7 +25,7 @@ class FoodDeliveryView extends StatefulWidget {
 
 class _FoodDeliveryViewState extends State<FoodDeliveryView> {
   /// Flip to `false` to use device location for `api/app/food/home` again.
-  static const bool _kTempFixedFoodHomeCoords = true;
+  static const bool _kTempFixedFoodHomeCoords = false;
   static const double _kTempFoodHomeLat = 24.8607;
   static const double _kTempFoodHomeLng = 67.0011;
 
@@ -265,6 +265,34 @@ class _FoodDeliveryViewState extends State<FoodDeliveryView> {
     }
   }
 
+
+  void _loadDemoNearbyRestaurants({int? categoryId, String? search}) {
+    final cats = [
+      Category(id: 1, name: 'Fast food', slug: 'fast-food', status: 1),
+      Category(id: 2, name: 'African', slug: 'african', status: 1),
+      Category(id: 3, name: 'Pizza', slug: 'pizza', status: 1),
+      Category(id: 4, name: 'Healthy', slug: 'healthy', status: 1),
+    ];
+    final all = <Vendor>[
+      Vendor(id: null, categoryId: 1, name: 'Downtown Grill', address: 'Near your current location', deliveryFee: '2.99', minOrderAmount: '12', rating: '4.7', totalOrders: 340, businessTimings: '20–30 min', isOpen: 1, isAvailableForDelivery: 1, distance: 1.2),
+      Vendor(id: null, categoryId: 2, name: 'Mama Africa Kitchen', address: 'Fresh meals nearby', deliveryFee: '3.49', minOrderAmount: '15', rating: '4.8', totalOrders: 219, businessTimings: '25–35 min', isOpen: 1, isAvailableForDelivery: 1, distance: 2.0),
+      Vendor(id: null, categoryId: 3, name: 'T-Ride Pizza Express', address: 'Pizza and wings', deliveryFee: '1.99', minOrderAmount: '10', rating: '4.6', totalOrders: 511, businessTimings: '18–28 min', isOpen: 1, isAvailableForDelivery: 1, distance: 2.6),
+      Vendor(id: null, categoryId: 4, name: 'Green Bowl', address: 'Salads, bowls and smoothies', deliveryFee: '2.49', minOrderAmount: '11', rating: '4.5', totalOrders: 144, businessTimings: '22–32 min', isOpen: 1, isAvailableForDelivery: 1, distance: 3.1),
+    ];
+    final q = search?.trim().toLowerCase();
+    final filtered = all.where((v) {
+      final matchesCategory = categoryId == null || v.categoryId == categoryId;
+      final matchesSearch = q == null || q.isEmpty || (v.name ?? '').toLowerCase().contains(q) || (v.address ?? '').toLowerCase().contains(q);
+      return matchesCategory && matchesSearch;
+    }).toList();
+    setState(() {
+      _categories = cats;
+      _vendors = filtered;
+      _selectedCategoryId = categoryId;
+      _errorMessage = null;
+    });
+  }
+
   Future<void> _loadScreen() async {
     setState(() {
       _isLoading = true;
@@ -330,23 +358,15 @@ class _FoodDeliveryViewState extends State<FoodDeliveryView> {
           } catch (_) {}
         }
         if (mounted && seq == _foodHomeFetchSeq) {
-          setState(() {
-            _errorMessage = message;
-            _categories = [];
-            _vendors = [];
-          });
-          AppSnackBar.error('common.error'.tr, message);
+          _loadDemoNearbyRestaurants(categoryId: categoryId, search: search);
+          AppSnackBar.error('common.error'.tr, 'Showing nearby demo restaurants while the server is unavailable.');
         }
         return;
       }
 
       if (!(bodyTrim.startsWith('{') || bodyTrim.startsWith('['))) {
         if (mounted && seq == _foodHomeFetchSeq) {
-          setState(() {
-            _errorMessage = 'Invalid response from server.';
-            _categories = [];
-            _vendors = [];
-          });
+          _loadDemoNearbyRestaurants(categoryId: categoryId, search: search);
         }
         return;
       }
@@ -354,11 +374,7 @@ class _FoodDeliveryViewState extends State<FoodDeliveryView> {
       final parsed = DiliveryHomeData.fromJsonString(response.body);
       if (parsed.data == null) {
         if (mounted && seq == _foodHomeFetchSeq) {
-          setState(() {
-            _errorMessage = 'No data available.';
-            _categories = [];
-            _vendors = [];
-          });
+          _loadDemoNearbyRestaurants(categoryId: categoryId, search: search);
         }
         return;
       }
@@ -376,14 +392,10 @@ class _FoodDeliveryViewState extends State<FoodDeliveryView> {
       // ignore: avoid_print
       print('FoodDeliveryView _fetchFoodHome: $e');
       if (mounted && seq == _foodHomeFetchSeq) {
-        setState(() {
-          _errorMessage = 'Something went wrong while loading.';
-          _categories = [];
-          _vendors = [];
-        });
+        _loadDemoNearbyRestaurants(categoryId: categoryId, search: search);
         AppSnackBar.error(
           'common.error'.tr,
-          'Something went wrong while loading.',
+          'Showing nearby demo restaurants while the server is unavailable.',
         );
       }
     } finally {

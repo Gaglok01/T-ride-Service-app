@@ -8,7 +8,7 @@ import 'package:t_ride_rider_app/widgets/app_snackbar.dart';
 import 'package:t_ride_rider_app/widgets/custom_appbar.dart';
 import 'package:t_ride_rider_app/widgets/custom_textfield.dart';
 import '../../../consts/appConst.dart';
-
+import '../../auth_screens/login_screen.dart';
 import '../../custom_navbar/navbar.dart';
 import '../../vendor/registration/vendor_profile_setup.dart';
 
@@ -54,6 +54,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     final confirm = _confirmPasswordController.text;
 
     return _nameController.text.isNotEmpty &&
+        _addressController.text.isNotEmpty &&
+        _regionController.text.isNotEmpty &&
+        _cityController.text.isNotEmpty &&
         password.isNotEmpty &&
         confirm.isNotEmpty &&
         password == confirm &&
@@ -96,9 +99,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         password: password,
         role: widget.role,
         languageId: languageId,
-        address: '',
-        city: '',
-        region: '',
+        address: _addressController.text.trim(),
+        city: _cityController.text.trim(),
+        region: _regionController.text.trim(),
       );
 
       if (!mounted) return;
@@ -198,7 +201,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
         setState(() {
           _isSavingLocation = false;
         });
-        _handleContinue();
+        Get.offAll(() => const LoginScreen());
       }
     }
   }
@@ -241,7 +244,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         //         child: Icon(
                         //           Icons.person_2_outlined,
                         //           size: 30.sp,
-                        //           color: AppConst.white,
+                        //           color: AppConst.black,
                         //         ),
                         //       ),
                         //       // Camera icon button
@@ -256,7 +259,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         //             width: 32.w,
                         //             height: 32.w,
                         //             decoration: BoxDecoration(
-                        //               color: AppConst.white,
+                        //               color: AppConst.black,
                         //               shape: BoxShape.circle,
                         //             ),
                         //             child: Icon(
@@ -279,7 +282,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         //       child: Text(
                         //         'Create account (register now)',
                         //         style: TextStyle(
-                        //           color: AppConst.white,
+                        //           color: AppConst.black,
                         //           fontSize: 14.sp,
                         //           fontWeight: FontWeight.w500,
                         //         ),
@@ -287,7 +290,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         //     ),
                         //     Switch(
                         //       value: _shouldRegister,
-                        //       activecolor: AppConst.white,
+                        //       activeColor: AppConst.black,
                         //       onChanged: (value) {
                         //         setState(() {
                         //           _shouldRegister = value;
@@ -301,7 +304,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         Text(
                           'common.name'.tr,
                           style: TextStyle(
-                            color: AppConst.white,
+                            color: AppConst.black,
                             fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -317,14 +320,72 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                           ),
                         ),
                         SizedBox(height: 16.h),
-                        
-                        
-                        
+                        // Address Field
+                        Text(
+                          'common.address'.tr,
+                          style: TextStyle(
+                            color: AppConst.black,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        SizedBox(
+                          height: 55.h,
+                          child: CustomTextField(
+                            controller: _addressController,
+                            hintText: 'profile.hint_address'.tr,
+                            keyboardType: TextInputType.streetAddress,
+                            maxLines: 2,
+                            onChanged: (value) => setState(() {}),
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        // Region Field
+                        Text(
+                          'common.region'.tr,
+                          style: TextStyle(
+                            color: AppConst.black,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        SizedBox(
+                          height: 55.h,
+                          child: CustomTextField(
+                            controller: _regionController,
+                            hintText: 'profile.hint_region'.tr,
+                            keyboardType: TextInputType.text,
+                            onChanged: (value) => setState(() {}),
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
+                        // City Field
+                        Text(
+                          'common.city'.tr,
+                          style: TextStyle(
+                            color: AppConst.black,
+                            fontSize: 14.sp,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 8.h),
+                        SizedBox(
+                          height: 55.h,
+                          child: CustomTextField(
+                            controller: _cityController,
+                            hintText: 'profile.hint_city'.tr,
+                            keyboardType: TextInputType.text,
+                            onChanged: (value) => setState(() {}),
+                          ),
+                        ),
+                        SizedBox(height: 16.h),
                         // Password Field
                         Text(
                           'common.password'.tr,
                           style: TextStyle(
-                            color: AppConst.white,
+                            color: AppConst.black,
                             fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -342,7 +403,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               keyboardType: TextInputType.visiblePassword,
                               obscureText: _isPasswordObscured,
                               style: TextStyle(
-                                color: AppConst.white,
+                                color: AppConst.black,
                                 fontSize: 16.sp,
                               ),
                               decoration: InputDecoration(
@@ -387,7 +448,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         Text(
                           'common.confirm_password'.tr,
                           style: TextStyle(
-                            color: AppConst.white,
+                            color: AppConst.black,
                             fontSize: 14.sp,
                             fontWeight: FontWeight.bold,
                           ),
@@ -405,7 +466,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                               keyboardType: TextInputType.visiblePassword,
                               obscureText: _isConfirmPasswordObscured,
                               style: TextStyle(
-                                color: AppConst.white,
+                                color: AppConst.black,
                                 fontSize: 16.sp,
                               ),
                               decoration: InputDecoration(
@@ -453,7 +514,9 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                           child: ElevatedButton(
                             onPressed: !_isLoading ? _onContinuePressed : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: !_isLoading ? AppConst.black : AppConst.blackWithOpacity(0.35),
+                              backgroundColor: !_isLoading
+                                  ? AppConst.accent
+                                  : AppConst.accentWithOpacity(0.5),
                               shape: RoundedRectangleBorder(
                                 borderRadius: AppConst.buttonRadius,
                               ),
@@ -464,7 +527,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                                   ? 'profile.saving'.tr
                                   : 'common.continue'.tr,
                               style: TextStyle(
-                                color: AppConst.white,
+                                color: AppConst.black,
                                 fontSize: 16.sp,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -497,7 +560,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                       Text(
                         'profile.getting_location'.tr,
                         style: TextStyle(
-                          color: AppConst.white,
+                          color: AppConst.black,
                           fontSize: 16.sp,
                         ),
                       ),
@@ -537,7 +600,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   Text(
                     'profile.saved_success'.tr,
                     style: TextStyle(
-                      color: AppConst.white,
+                      color: AppConst.black,
                       fontSize: 22.sp,
                       fontWeight: FontWeight.bold,
                     ),
@@ -547,7 +610,7 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                   // Sub Message
                   Text(
                     'profile.saved_subtitle'.tr,
-                    style: TextStyle(color: AppConst.white, fontSize: 14.sp),
+                    style: TextStyle(color: AppConst.black, fontSize: 14.sp),
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 60.h),
@@ -587,13 +650,13 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
                         height: 20.w,
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
-                          color: AppConst.white,
+                          color: AppConst.black,
                         ),
                       )
                     : Text(
                         'common.continue'.tr,
                         style: TextStyle(
-                          color: AppConst.white,
+                          color: AppConst.black,
                           fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                         ),
@@ -606,5 +669,3 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
     );
   }
 }
-
-

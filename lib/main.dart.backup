@@ -37,10 +37,8 @@ Future<void> _initFirebase() async {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (!kIsWeb) {
-    Stripe.publishableKey = StripeConfig.publishableKey;
-    await Stripe.instance.applySettings();
-  }
+  Stripe.publishableKey = StripeConfig.publishableKey;
+  await Stripe.instance.applySettings();
   await _initFirebase();
   // Set global system UI overlay style - white icons for all screens
   SystemChrome.setSystemUIOverlayStyle(
@@ -143,4 +141,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

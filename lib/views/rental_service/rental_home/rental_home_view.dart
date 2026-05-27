@@ -1,315 +1,248 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
-import 'package:t_ride_rider_app/views/setting/setting_screen.dart';
+
 import '../../../consts/appConst.dart';
 import '../car_rental/car_rental_view.dart';
 
-class RentalHomeView extends StatelessWidget {
+class RentalHomeView extends StatefulWidget {
   const RentalHomeView({super.key});
 
   @override
+  State<RentalHomeView> createState() => _RentalHomeViewState();
+}
+
+class _RentalHomeViewState extends State<RentalHomeView> {
+  final TextEditingController _searchController = TextEditingController();
+  String _query = '';
+  String _selectedType = 'All';
+
+  final List<_RentalOption> _items = const [
+    _RentalOption(type: 'Car', title: 'Toyota Camry', subtitle: 'Economy sedan • 5 seats', price: r'$42/day', distance: '1.4 mi', icon: Icons.directions_car_filled_outlined),
+    _RentalOption(type: 'Car', title: 'Honda CR-V', subtitle: 'SUV • luggage friendly', price: r'$58/day', distance: '2.1 mi', icon: Icons.airport_shuttle_outlined),
+    _RentalOption(type: 'XL', title: 'Dodge Grand Caravan', subtitle: 'XL van • family trips', price: r'$72/day', distance: '3.0 mi', icon: Icons.directions_bus_filled_outlined),
+    _RentalOption(type: 'Apartment', title: 'Short stay apartment', subtitle: 'Studio • verified host', price: r'$89/night', distance: '2.8 mi', icon: Icons.apartment_rounded),
+    _RentalOption(type: 'House', title: 'Family house rental', subtitle: '3 bedrooms • driveway', price: r'$135/night', distance: '4.2 mi', icon: Icons.home_work_outlined),
+  ];
+
+  List<_RentalOption> get _visibleItems {
+    final q = _query.trim().toLowerCase();
+    return _items.where((item) {
+      final typeOk = _selectedType == 'All' || item.type == _selectedType;
+      final searchOk = q.isEmpty ||
+          item.title.toLowerCase().contains(q) ||
+          item.subtitle.toLowerCase().contains(q) ||
+          item.type.toLowerCase().contains(q);
+      return typeOk && searchOk;
+    }).toList();
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _openItem(_RentalOption item) {
+    Get.to(
+      () => CarRentalView(
+        title: item.title,
+        description: '${item.subtitle}\n${item.price} • ${item.distance} away',
+        category: item.type,
+      ),
+    );
+  }
+
+  @override
   Widget build(BuildContext context) {
-    String searchText = '';
     return Scaffold(
-      backgroundColor: AppConst.background,
-      body: SingleChildScrollView(
-        child: StatefulBuilder(
-          builder: (context, setState) {
-            final q = searchText;
-            final showCar =
-                q.isEmpty ||
-                'car rental rent a car easily for daily or long-term use car'
-                    .contains(q);
-            final showApartment =
-                q.isEmpty ||
-                'apartment rental find comfortable apartments for short or long stays apartment'
-                    .contains(q);
-            final showHouse =
-                q.isEmpty ||
-                'house rentals browse houses available for rent at affordable prices house'
-                    .contains(q);
-            return Column(
-              children: [
-                // Top Header (Black Background)
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppConst.black,
-                    borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(20.r),
-                      bottomRight: Radius.circular(20.r),
-                    ),
-                  ),
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20.w,
-                    vertical: 12.h,
-                  ),
-                  child: SafeArea(
-                    child: Column(
-                      children: [
-                        SizedBox(height: 8.h),
-                        // Navigation Bar
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            GestureDetector(
-                              onTap: () => Get.back(),
-                              child: Icon(
-                                Directionality.of(context) == TextDirection.rtl
-                                    ? Icons.arrow_forward
-                                    : Icons.arrow_back,
-                                color: AppConst.white,
-                                size: 24.sp,
-                              ),
-                            ),
-                            Text(
-                              'Rental Service',
-                              style: TextStyle(
-                                color: AppConst.white,
-                                fontSize: 18.sp,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                Get.to(() => const SettingScreen());
-                              },
-                              child: Icon(
-                                Icons.settings,
-                                color: AppConst.white,
-                                size: 24.sp,
-                              ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(height: 16.h),
-                        // Search Bar
-                        Container(
-                          width: double.infinity,
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 14.w,
-                            vertical: 4.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppConst.cardLight,
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: TextField(
-                            onChanged: (value) {
-                              setState(() {
-                                searchText = value.trim().toLowerCase();
-                              });
-                            },
-                            decoration: InputDecoration(
-                              hintText: 'rental.search_hint'.tr,
-                              hintStyle: TextStyle(
-                                color: AppConst.grey,
-                                fontSize: 14.sp,
-                              ),
-                              border: InputBorder.none,
-                              prefixIcon: Icon(
-                                Icons.search,
-                                color: AppConst.grey,
-                                size: 20.sp,
-                              ),
-                              isDense: true,
-                              contentPadding: EdgeInsets.only(top: 10),
-                            ),
-                            style: TextStyle(
-                              color: AppConst.black,
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 16.h),
-                      ],
-                    ),
-                  ),
+      backgroundColor: const Color(0xFFF7F7F7),
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(child: _header()),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(18.w, 18.h, 18.w, 24.h),
+            sliver: SliverList(
+              delegate: SliverChildListDelegate([
+                _searchBar(),
+                SizedBox(height: 16.h),
+                _filters(),
+                SizedBox(height: 20.h),
+                _sectionTitle(),
+                SizedBox(height: 12.h),
+                for (final item in _visibleItems) ...[
+                  _rentalCard(item),
+                  SizedBox(height: 10.h),
+                ],
+                if (_visibleItems.isEmpty) _emptyState(),
+              ]),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _header() {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppConst.black,
+        borderRadius: BorderRadius.vertical(bottom: Radius.circular(28.r)),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: EdgeInsets.fromLTRB(18.w, 10.h, 18.w, 24.h),
+          child: Row(
+            children: [
+              IconButton(
+                onPressed: Get.back,
+                icon: Icon(Icons.arrow_back_rounded, color: AppConst.white, size: 26.sp),
+              ),
+              SizedBox(width: 6.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Rental', style: TextStyle(color: AppConst.white, fontSize: 24.sp, fontWeight: FontWeight.w900)),
+                    SizedBox(height: 3.h),
+                    Text('Cars, apartments and homes near you', style: TextStyle(color: AppConst.white.withValues(alpha: 0.72), fontSize: 12.sp)),
+                  ],
                 ),
-                // Main Content
-                Padding(
-                  padding: EdgeInsets.all(20.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Section Header
-                      Text(
-                        'Find Rentals Near You',
-                        style: TextStyle(
-                          color: AppConst.black,
-                          fontSize: 20.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 20.h),
-                      // Rental Category Cards
-                      if (showCar) ...[
-                        _buildRentalCard(
-                          imageIcon: Icons.directions_car,
-                          title: 'rental.car'.tr,
-                          category: 'Car',
-                          description:
-                              'Rent a car easily for daily or long-term use.',
-                        ),
-                        if (showApartment || showHouse) SizedBox(height: 16.h),
-                      ],
-                      if (showApartment) ...[
-                        _buildRentalCard(
-                          imageIcon: Icons.apartment,
-                          title: 'rental.apartment'.tr,
-                          category: 'Apartment',
-                          description:
-                              'Find comfortable apartments for short or long stays.',
-                          imagePath: 'assets/apartment.jpeg',
-                        ),
-                        if (showHouse) SizedBox(height: 16.h),
-                      ],
-                      if (showHouse) ...[
-                        _buildRentalCard(
-                          imageIcon: Icons.home,
-                          title: 'rental.house'.tr,
-                          category: 'House',
-                          description:
-                              'Browse houses available for rent at affordable prices.',
-                          imagePath: 'assets/house.jpeg',
-                        ),
-                      ],
-                      if (!showCar && !showApartment && !showHouse) ...[
-                        Padding(
-                          padding: EdgeInsets.only(top: 10.h),
-                          child: Text(
-                            'No results found.',
-                            style: TextStyle(
-                              color: AppConst.black,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                      SizedBox(height: 24.h),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
+              ),
+              Container(
+                width: 44.w,
+                height: 44.w,
+                decoration: BoxDecoration(color: AppConst.primaryColor, borderRadius: BorderRadius.circular(16.r)),
+                child: Icon(Icons.map_outlined, color: AppConst.black, size: 22.sp),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildRentalCard({
-    required IconData imageIcon,
-    required String title,
-    required String category,
-    required String description,
-    String? imagePath,
-  }) {
-    return GestureDetector(
-      onTap: () {
-        Get.to(
-          () => CarRentalView(
-            title: title,
-            description: description,
-            category: category,
-          ),
-        );
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          // color: AppConst.white,
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            // BoxShadow(
-            //   color: AppConst.black.withOpacity(0.08),
-            //   blurRadius: 8,
-            //   offset: const Offset(0, 2),
-            // ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Image Section
-            Container(
-              height: 150.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppConst.grey.withOpacity(0.2),
-                borderRadius: AppConst.borderRadius,
-              ),
-              child: Stack(
-                children: [
-                  Center(
-                    child: ClipRRect(
-                      borderRadius: AppConst.borderRadius,
-                      child: Image.asset(
-                        imagePath ?? 'assets/Frame 73.png',
-                        width: double.infinity,
-                        height: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(
-                            imageIcon,
-                            color: AppConst.grey,
-                            size: 60.sp,
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-                  // Add Button
-                  // Positioned(
-                  //   bottom: 12.h,
-                  //   right: 12.w,
-                  //   child: GestureDetector(
-                  //     onTap: () {
-                  //       // TODO: Handle add to favorites or quick action
-                  //     },
-                  //     child: Container(
-                  //       width: 32.w,
-                  //       height: 32.w,
-                  //       decoration: BoxDecoration(
-                  //         color: AppConst.black,
-                  //         shape: BoxShape.circle,
-                  //       ),
-                  //       child: Icon(
-                  //         Icons.add,
-                  //         color: AppConst.white,
-                  //         size: 20.sp,
-                  //       ),
-                  //     ),
-                  //   ),
-                  // ),
-                ],
-              ),
-            ),
-            // Content Section
-            Padding(
-              padding: EdgeInsets.all(8.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: AppConst.black,
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  SizedBox(height: 3.h),
-                  Text(
-                    description,
-                    style: TextStyle(color: AppConst.black, fontSize: 12.sp),
-                  ),
-                ],
-              ),
-            ),
-          ],
+  Widget _searchBar() {
+    return Material(
+      color: AppConst.white,
+      borderRadius: BorderRadius.circular(20.r),
+      child: TextField(
+        controller: _searchController,
+        onChanged: (v) => setState(() => _query = v),
+        decoration: InputDecoration(
+          hintText: 'Search cars, apartments, houses',
+          prefixIcon: const Icon(Icons.search_rounded),
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(vertical: 16.h),
         ),
       ),
     );
   }
+
+  Widget _filters() {
+    final filters = ['All', 'Car', 'XL', 'Apartment', 'House'];
+    return SizedBox(
+      height: 42.h,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: filters.length,
+        separatorBuilder: (_, __) => SizedBox(width: 8.w),
+        itemBuilder: (_, index) {
+          final f = filters[index];
+          final selected = f == _selectedType;
+          return ChoiceChip(
+            selected: selected,
+            label: Text(f),
+            onSelected: (_) => setState(() => _selectedType = f),
+            selectedColor: AppConst.primaryColor,
+            backgroundColor: AppConst.white,
+            labelStyle: TextStyle(color: AppConst.black, fontWeight: FontWeight.w800),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r), side: BorderSide.none),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _sectionTitle() {
+    return Row(
+      children: [
+        Expanded(child: Text('Nearby rental options', style: TextStyle(color: AppConst.black, fontSize: 19.sp, fontWeight: FontWeight.w900))),
+        Text('${_visibleItems.length} available', style: TextStyle(color: AppConst.textSecondary, fontSize: 12.sp, fontWeight: FontWeight.w700)),
+      ],
+    );
+  }
+
+  Widget _rentalCard(_RentalOption item) {
+    return Material(
+      color: AppConst.white,
+      borderRadius: BorderRadius.circular(22.r),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _openItem(item),
+        child: Padding(
+          padding: EdgeInsets.all(14.w),
+          child: Row(
+            children: [
+              Container(
+                width: 62.w,
+                height: 62.w,
+                decoration: BoxDecoration(color: AppConst.primaryColor.withValues(alpha: 0.28), borderRadius: BorderRadius.circular(20.r)),
+                child: Icon(item.icon, color: AppConst.black, size: 30.sp),
+              ),
+              SizedBox(width: 14.w),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.title, style: TextStyle(color: AppConst.black, fontSize: 15.sp, fontWeight: FontWeight.w900)),
+                    SizedBox(height: 4.h),
+                    Text(item.subtitle, style: TextStyle(color: AppConst.textSecondary, fontSize: 12.sp, fontWeight: FontWeight.w500)),
+                    SizedBox(height: 7.h),
+                    Row(children: [
+                      Icon(Icons.near_me_outlined, color: AppConst.textSecondary, size: 15.sp),
+                      SizedBox(width: 4.w),
+                      Text(item.distance, style: TextStyle(color: AppConst.textSecondary, fontSize: 11.sp, fontWeight: FontWeight.w700)),
+                    ]),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(item.price, style: TextStyle(color: AppConst.black, fontSize: 14.sp, fontWeight: FontWeight.w900)),
+                  SizedBox(height: 16.h),
+                  Icon(Icons.chevron_right_rounded, color: AppConst.textSecondary, size: 26.sp),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _emptyState() {
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 60.h),
+      child: Column(
+        children: [
+          Icon(Icons.search_off_rounded, size: 48.sp, color: AppConst.textSecondary),
+          SizedBox(height: 10.h),
+          Text('No rental option found', style: TextStyle(color: AppConst.black, fontWeight: FontWeight.w800)),
+        ],
+      ),
+    );
+  }
+}
+
+class _RentalOption {
+  const _RentalOption({required this.type, required this.title, required this.subtitle, required this.price, required this.distance, required this.icon});
+  final String type;
+  final String title;
+  final String subtitle;
+  final String price;
+  final String distance;
+  final IconData icon;
 }
