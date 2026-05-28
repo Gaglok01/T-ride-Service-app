@@ -557,6 +557,36 @@ class _RideFareScreenState extends State<RideFareScreen> {
     }
   }
 
+  Widget _tipChip(String amount) {
+    final selected = _tipController.text.trim() == amount;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _tipController.text = amount),
+        child: Container(
+          padding: EdgeInsets.symmetric(vertical: 10.h),
+          decoration: BoxDecoration(
+            color: selected ? AppConst.black : AppConst.cardLight,
+            borderRadius: BorderRadius.circular(10.r),
+            border: Border.all(
+              color: selected ? AppConst.black : AppConst.grey.withValues(alpha: 0.25),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              '\$' + amount,
+              style: TextStyle(
+                color: selected ? AppConst.white : AppConst.black,
+                fontSize: 12.sp,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _paymentChip(String label, String value) {
     final selected = _paymentMethod == value;
     return Expanded(
@@ -924,6 +954,18 @@ class _RideFareScreenState extends State<RideFareScreen> {
                             ],
                           ),
                           SizedBox(height: 14.h),
+                          Row(
+                            children: [
+                              _tipChip('2'),
+                              SizedBox(width: 8.w),
+                              _tipChip('5'),
+                              SizedBox(width: 8.w),
+                              _tipChip('10'),
+                              SizedBox(width: 8.w),
+                              _tipChip('15'),
+                            ],
+                          ),
+                          SizedBox(height: 10.h),
                           TextField(
                             controller: _tipController,
                             keyboardType: const TextInputType.numberWithOptions(
@@ -1004,3 +1046,5 @@ class _RideFareScreenState extends State<RideFareScreen> {
     );
   }
 }
+
+
