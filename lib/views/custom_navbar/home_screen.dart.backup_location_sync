@@ -15,7 +15,6 @@ import 'package:t_ride_rider_app/data/models/user_profile_model.dart';
 import 'package:t_ride_rider_app/data/models/wallet_model.dart';
 import 'package:t_ride_rider_app/data/repositories/profile_repository.dart';
 import 'package:t_ride_rider_app/data/repositories/wallet_repository.dart';
-import 'package:t_ride_rider_app/data/repositories/location_repository.dart';
 import 'package:t_ride_rider_app/widgets/app_snackbar.dart';
 import 'package:t_ride_rider_app/views/courier_service/courier_request_details_screen.dart';
 import 'package:t_ride_rider_app/views/wallet/add_to_wallet/add_to_wallet_view.dart';
@@ -115,7 +114,6 @@ class _HomeScreenState extends State<HomeScreen> {
   static const String _sosTRideNumber = '87344';
   final ProfileRepository _profileRepository = ProfileRepository();
   final WalletRepository _walletRepository = WalletRepository();
-  final LocationRepository _locationRepository = LocationRepository();
   final SecureStorageService _storageService = SecureStorageService();
   UserProfile? _userProfile;
   bool _isLoadingProfile = true;
@@ -127,7 +125,6 @@ class _HomeScreenState extends State<HomeScreen> {
   List<_RecentActivityItem> _recentActivity = [];
   GoogleMapController? _mapController;
   StreamSubscription<Position>? _positionSubscription;
-  Timer? _locationSyncTimer;
   LatLng _currentLatLng = const LatLng(41.2565, -95.9345);
   bool _isMapReady = false;
   bool _hasLocationPermission = false;
@@ -150,7 +147,6 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchWallet();
     _fetchRecentActivity();
     _initializeLiveMap();
-    _startLocationSyncTimer();
   }
 
   Future<void> _callNumber(String number) async {
@@ -658,7 +654,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _positionSubscription?.cancel();
-    _locationSyncTimer?.cancel();
     _mapController?.dispose();
     super.dispose();
   }
@@ -684,7 +679,6 @@ class _HomeScreenState extends State<HomeScreen> {
       final latLng = LatLng(position.latitude, position.longitude);
       if (!mounted) return;
       setState(() => _currentLatLng = latLng);
-      await _syncCurrentLocationToBackend();
       _setMapMarkers(latLng);
       _moveMap(latLng, zoom: 15.2);
 
@@ -697,7 +691,6 @@ class _HomeScreenState extends State<HomeScreen> {
         final next = LatLng(position.latitude, position.longitude);
         if (!mounted) return;
         setState(() => _currentLatLng = next);
-        _syncCurrentLocationToBackend();
         _setMapMarkers(next);
       });
     } catch (_) {
@@ -745,26 +738,6 @@ class _HomeScreenState extends State<HomeScreen> {
         CameraPosition(target: target, zoom: zoom),
       ),
     );
-  }
-
-  void _startLocationSyncTimer() {
-    _locationSyncTimer?.cancel();
-    _locationSyncTimer = Timer.periodic(const Duration(seconds: 20), (_) {
-      _syncCurrentLocationToBackend();
-    });
-  }
-
-  Future<void> _syncCurrentLocationToBackend() async {
-    try {
-      await _locationRepository.saveLocation(
-        lat: _currentLatLng.latitude,
-        lng: _currentLatLng.longitude,
-      );
-    } catch (e) {
-      // Keep home screen usable even if one location sync fails.
-      // ignore: avoid_print
-      print('HomeScreen rider location sync error: ');
-    }
   }
 
   Future<void> _showScheduleRideSheet() async {
@@ -1941,6 +1914,3 @@ Widget _recentActivityListCard({
     ),
   );
 }
-
-
-
