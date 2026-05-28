@@ -611,7 +611,7 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
               polylineId: const PolylineId('route'),
               points: points,
               width: 4,
-              color: Colors.blue,
+              color: AppConst.black,
             );
             _routeDurationText = durationText;
           });
@@ -964,13 +964,13 @@ class _DriverDetailsScreenState extends State<DriverDetailsScreen> {
                                     children: [
                                       // Profile Picture
                                       CircleAvatar(
-                                        radius: 40.r,
+                                        radius: 44.r,
                                         backgroundColor:
                                             _waitingOnDriverAssignment
                                             ? AppConst.grey.withValues(
                                                 alpha: 0.28,
                                               )
-                                            : Colors.blue,
+                                            : AppConst.black,
                                         backgroundImage: hasValidDriverPhoto
                                             ? NetworkImage(driverPhotoUrl)
                                             : null,
@@ -1415,3 +1415,4 @@ class TrianglePainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
+
