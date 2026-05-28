@@ -1048,3 +1048,4 @@ class _RideFareScreenState extends State<RideFareScreen> {
 }
 
 
+
